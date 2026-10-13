@@ -1,0 +1,11 @@
+{
+  "item.theedge.sandevistan": "Sandevistan",
+  "itemGroup.theedge": "The Edge",
+  "key.categories.theedge": "The Edge",
+  "key.theedge.activate": "Activate Sandevistan",
+  "message.theedge.activated": "Sandevistan activated",
+  "message.theedge.ended": "Sandevistan deactivated",
+  "message.theedge.cooldown": "Sandevistan is recharging",
+  "message.theedge.no_item": "You need a Sandevistan to do that",
+  "tooltip.theedge.sandevistan": "Slows time for everything around you"
+}

@@ -1,0 +1,11 @@
+{
+  "item.theedge.sandevistan": "斯安维斯坦",
+  "itemGroup.theedge": "边缘 The Edge",
+  "key.categories.theedge": "边缘 The Edge",
+  "key.theedge.activate": "启动斯安维斯坦",
+  "message.theedge.activated": "斯安维斯坦已启动",
+  "message.theedge.ended": "斯安维斯坦效果结束",
+  "message.theedge.cooldown": "斯安维斯坦冷却中",
+  "message.theedge.no_item": "你需要一个斯安维斯坦才能使用",
+  "tooltip.theedge.sandevistan": "减慢周围所有事物的时间"
+}
