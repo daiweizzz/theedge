@@ -1,6 +1,6 @@
 package com.theedge.core;
 
-import com.theedge.config.ModConfig;
+import com.theedge.config.TheEdgeConfig;
 import com.theedge.init.ModItems;
 import com.theedge.network.SandevistanSyncPayload;
 import net.minecraft.ChatFormatting;
@@ -49,13 +49,13 @@ public final class SandevistanState {
     }
 
     private static void activate(ServerPlayer player) {
-        int duration = ModConfig.DURATION_TICKS.get();
-        int cooldown = ModConfig.COOLDOWN_TICKS.get();
+        int duration = TheEdgeConfig.DURATION_TICKS.get();
+        int cooldown = TheEdgeConfig.COOLDOWN_TICKS.get();
 
         REMAINING_TICKS.put(player.getUUID(), duration);
         player.getCooldowns().addCooldown(ModItems.SANDEVISTAN.get(), cooldown);
 
-        int selfSpeed = ModConfig.SELF_SPEED_AMPLIFIER.get();
+        int selfSpeed = TheEdgeConfig.SELF_SPEED_AMPLIFIER.get();
         if (selfSpeed >= 0) {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, duration, selfSpeed, false, false, true));
         }
@@ -98,9 +98,9 @@ public final class SandevistanState {
             return;
         }
 
-        int radius = ModConfig.SLOW_RADIUS.get();
-        boolean freezeMotion = ModConfig.FREEZE_MOTION.get();
-        int slownessAmplifier = ModConfig.SLOWNESS_AMPLIFIER.get();
+        int radius = TheEdgeConfig.SLOW_RADIUS.get();
+        boolean freezeMotion = TheEdgeConfig.FREEZE_MOTION.get();
+        int slownessAmplifier = TheEdgeConfig.SLOWNESS_AMPLIFIER.get();
 
         for (ServerLevel level : server.getAllLevels()) {
             List<Vec3> activePositions = new ArrayList<>();
