@@ -2,11 +2,13 @@ package com.theedge.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.theedge.TheEdgeMod;
+import com.theedge.init.ModEntities;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
@@ -30,5 +32,10 @@ public final class ClientModEvents {
         event.registerAboveAll(
                 ResourceLocation.fromNamespaceAndPath(TheEdgeMod.MODID, "sandevistan_overlay"),
                 (guiGraphics, deltaTracker) -> ClientSandevistan.renderOverlay(guiGraphics));
+    }
+
+    @SubscribeEvent
+    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.AFTERIMAGE.get(), AfterimageRenderer::new);
     }
 }

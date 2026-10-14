@@ -99,7 +99,7 @@ public final class SandevistanState {
         }
 
         int radius = TheEdgeConfig.SLOW_RADIUS.get();
-        boolean freezeMotion = TheEdgeConfig.FREEZE_MOTION.get();
+        double motionSlowFactor = TheEdgeConfig.MOTION_SLOW_FACTOR.get();
         int slownessAmplifier = TheEdgeConfig.SLOWNESS_AMPLIFIER.get();
 
         for (ServerLevel level : server.getAllLevels()) {
@@ -133,19 +133,19 @@ public final class SandevistanState {
                         continue;
                     }
                 }
-                applySlowdown(entity, freezeMotion, slownessAmplifier);
+                applySlowdown(entity, motionSlowFactor, slownessAmplifier);
             }
         }
     }
 
-    private static void applySlowdown(Entity entity, boolean freezeMotion, int slownessAmplifier) {
+    private static void applySlowdown(Entity entity, double motionSlowFactor, int slownessAmplifier) {
         if (entity instanceof LivingEntity living) {
             living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 25, slownessAmplifier, false, false, false));
             living.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 25, 2, false, false, false));
         }
-        if (freezeMotion) {
+        if (motionSlowFactor < 1.0) {
             Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(motion.x * 0.02, motion.y * 0.02, motion.z * 0.02);
+            entity.setDeltaMovement(motion.x * motionSlowFactor, motion.y * motionSlowFactor, motion.z * motionSlowFactor);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.theedge;
 
 import com.theedge.config.TheEdgeConfig;
 import com.theedge.core.ServerEventHandler;
+import com.theedge.init.ModEntities;
 import com.theedge.init.ModItems;
 import com.theedge.network.ModNetwork;
 import net.neoforged.bus.api.IEventBus;
@@ -16,6 +17,7 @@ public final class TheEdgeMod {
     public TheEdgeMod(IEventBus modEventBus, ModContainer container) {
         ModItems.ITEMS.register(modEventBus);
         ModItems.CREATIVE_MODE_TABS.register(modEventBus);
+        ModEntities.ENTITY_TYPES.register(modEventBus);
         TheEdgeConfig.register(container);
         modEventBus.addListener(ModNetwork::register);
         NeoForge.EVENT_BUS.register(ServerEventHandler.class);

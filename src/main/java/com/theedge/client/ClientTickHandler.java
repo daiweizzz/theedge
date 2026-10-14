@@ -19,5 +19,6 @@ public final class ClientTickHandler {
         while (ClientModEvents.ACTIVATE_KEY.consumeClick()) {
             PacketDistributor.sendToServer(new ActivateSandevistanPayload());
         }
+        ClientSandevistan.spawnAfterimages();
     }
 }
