@@ -6,19 +6,16 @@ import com.theedge.entity.AfterimageEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 
 public class AfterimageRenderer extends EntityRenderer<AfterimageEntity> {
-    private static final ResourceLocation WHITE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("theedge", "textures/misc/white.png");
-
-    private final PlayerModel<Player> model;
+    private final PlayerModel<AbstractClientPlayer> model;
 
     public AfterimageRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -27,7 +24,7 @@ public class AfterimageRenderer extends EntityRenderer<AfterimageEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(AfterimageEntity entity) {
-        return WHITE_TEXTURE;
+        return entity.getSkin();
     }
 
     @Override
@@ -39,14 +36,14 @@ public class AfterimageRenderer extends EntityRenderer<AfterimageEntity> {
         this.model.setAllVisible(true);
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player != null) {
-            this.model.setupAnim(minecraft.player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+            this.model.setupAnim(minecraft.player, 0.0F, 0.0F, minecraft.player.tickCount + partialTicks, 0.0F, 0.0F);
         }
 
         float life = 1.0F - (float) entity.getAge() / (float) entity.getLifetime();
-        int alpha = (int) (170 * life);
-        int color = (alpha << 24) | (ClientSandevistan.SANDY_TINT & 0x00FFFFFF);
+        int alpha = (int) (150 * life);
+        int color = (alpha << 24) | 0x00FFFFFF;
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(WHITE_TEXTURE));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(entity.getSkin()));
         this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, color);
 
         poseStack.popPose();

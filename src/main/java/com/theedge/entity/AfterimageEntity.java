@@ -2,6 +2,7 @@ package com.theedge.entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -10,6 +11,7 @@ public class AfterimageEntity extends Entity {
     private static final int LIFETIME = 12;
 
     private int age;
+    private ResourceLocation skin = ResourceLocation.withDefaultNamespace("textures/entity/steve.png");
 
     public AfterimageEntity(EntityType<AfterimageEntity> type, Level level) {
         super(type, level);
@@ -35,6 +37,14 @@ public class AfterimageEntity extends Entity {
 
     public int getLifetime() {
         return LIFETIME;
+    }
+
+    public ResourceLocation getSkin() {
+        return this.skin;
+    }
+
+    public void setSkin(ResourceLocation skin) {
+        this.skin = skin;
     }
 
     @Override

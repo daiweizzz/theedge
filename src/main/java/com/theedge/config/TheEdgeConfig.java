@@ -9,29 +9,26 @@ public final class TheEdgeConfig {
     }
 
     public static final ModConfigSpec SPEC;
-    public static final ModConfigSpec.IntValue DURATION_TICKS;
-    public static final ModConfigSpec.IntValue COOLDOWN_TICKS;
-    public static final ModConfigSpec.IntValue SLOWNESS_AMPLIFIER;
-    public static final ModConfigSpec.IntValue SELF_SPEED_AMPLIFIER;
-    public static final ModConfigSpec.IntValue SLOW_RADIUS;
-    public static final ModConfigSpec.DoubleValue MOTION_SLOW_FACTOR;
+    public static final ModConfigSpec.IntValue NORMAL_DIVISOR;
+    public static final ModConfigSpec.IntValue OVERLOAD_DIVISOR;
+    public static final ModConfigSpec.DoubleValue CAPACITY_SECONDS;
+    public static final ModConfigSpec.DoubleValue RECHARGE_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue OVERLOAD_DRAIN_MULTIPLIER;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.push("sandevistan");
-        DURATION_TICKS = builder.comment("How long the Sandevistan effect lasts, in ticks (20 ticks = 1 second).")
-                .defineInRange("durationTicks", 200, 20, 12000);
-        COOLDOWN_TICKS = builder.comment("How long the player must wait between activations, in ticks.")
-                .defineInRange("cooldownTicks", 600, 0, 12000);
-        SLOWNESS_AMPLIFIER = builder.comment("Slowness amplifier applied to other entities (3 = noticeably slow but still moving).")
-                .defineInRange("slownessAmplifier", 3, 0, 255);
-        SELF_SPEED_AMPLIFIER = builder.comment("Speed amplifier applied to the user while active (-1 disables the speed boost).")
-                .defineInRange("selfSpeedAmplifier", 1, -1, 10);
-        SLOW_RADIUS = builder.comment("Radius in blocks around the user. 0 means the whole world (every loaded entity).")
-                .defineInRange("slowRadius", 0, 0, 1024);
-        MOTION_SLOW_FACTOR = builder.comment("How much other entities' motion is scaled each tick (1.0 = normal, 0.4 = strongly slowed).")
-                .defineInRange("motionSlowFactor", 0.4, 0.0, 1.0);
+        NORMAL_DIVISOR = builder.comment("How much time is slowed in normal mode (8 = 1/8 speed).")
+                .defineInRange("normalDivisor", 8, 1, 60);
+        OVERLOAD_DIVISOR = builder.comment("How much time is slowed in overload mode (15 = 1/15 speed).")
+                .defineInRange("overloadDivisor", 15, 1, 60);
+        CAPACITY_SECONDS = builder.comment("Stamina capacity in real seconds.")
+                .defineInRange("capacitySeconds", 10.0, 1.0, 3600.0);
+        RECHARGE_PER_SECOND = builder.comment("How much stamina recovers per real second while inactive.")
+                .defineInRange("rechargePerSecond", 0.5, 0.0, 100.0);
+        OVERLOAD_DRAIN_MULTIPLIER = builder.comment("Stamina drain multiplier while in overload mode.")
+                .defineInRange("overloadDrainMultiplier", 2.0, 1.0, 100.0);
         builder.pop();
 
         SPEC = builder.build();

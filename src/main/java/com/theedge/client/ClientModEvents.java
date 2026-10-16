@@ -22,9 +22,15 @@ public final class ClientModEvents {
             InputConstants.KEY_R,
             "key.categories.theedge");
 
+    public static final KeyMapping OVERLOAD_KEY = new KeyMapping(
+            "key.theedge.overload",
+            InputConstants.KEY_G,
+            "key.categories.theedge");
+
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(ACTIVATE_KEY);
+        event.register(OVERLOAD_KEY);
     }
 
     @SubscribeEvent

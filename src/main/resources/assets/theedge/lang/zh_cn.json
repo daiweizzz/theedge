@@ -1,11 +1,14 @@
 {
-  "item.theedge.sandevistan": "斯安维斯坦",
+  "item.theedge.sandevistan": "远地点-斯安威斯坦",
   "itemGroup.theedge": "边缘 The Edge",
   "key.categories.theedge": "边缘 The Edge",
-  "key.theedge.activate": "启动斯安维斯坦",
-  "message.theedge.activated": "斯安维斯坦已启动",
-  "message.theedge.ended": "斯安维斯坦效果结束",
-  "message.theedge.cooldown": "斯安维斯坦冷却中",
-  "message.theedge.no_item": "你需要一个斯安维斯坦才能使用",
-  "tooltip.theedge.sandevistan": "减慢周围所有事物的时间"
+  "key.theedge.activate": "开关远地点-斯安威斯坦",
+  "key.theedge.overload": "远地点过载",
+  "message.theedge.activated": "远地点已启动",
+  "message.theedge.ended": "远地点已关闭",
+  "message.theedge.empty": "远地点耐力不足",
+  "message.theedge.no_item": "你需要一个远地点-斯安威斯坦才能使用",
+  "hud.theedge.active": "远地点 · 剩余 %s 秒",
+  "hud.theedge.recharge": "远地点 · 恢复中 %s",
+  "tooltip.theedge.sandevistan": "将世界减速至近乎停滞，而你仍保持正常速度。"
 }

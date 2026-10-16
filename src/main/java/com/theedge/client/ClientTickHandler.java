@@ -15,9 +15,11 @@ public final class ClientTickHandler {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        ClientSandevistan.onClientTick();
         while (ClientModEvents.ACTIVATE_KEY.consumeClick()) {
-            PacketDistributor.sendToServer(new ActivateSandevistanPayload());
+            PacketDistributor.sendToServer(new ActivateSandevistanPayload(false));
+        }
+        while (ClientModEvents.OVERLOAD_KEY.consumeClick()) {
+            PacketDistributor.sendToServer(new ActivateSandevistanPayload(true));
         }
         ClientSandevistan.spawnAfterimages();
     }

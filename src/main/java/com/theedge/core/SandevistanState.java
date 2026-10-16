@@ -6,146 +6,185 @@ import com.theedge.network.SandevistanSyncPayload;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public final class SandevistanState {
     private SandevistanState() {
     }
 
-    private static final Map<UUID, Integer> REMAINING_TICKS = new ConcurrentHashMap<>();
+    private static final Set<UUID> ACTIVE = new HashSet<>();
+    private static final Set<UUID> OVERLOAD = new HashSet<>();
+    private static final Map<UUID, Double> ENERGY = new HashMap<>();
+    private static final Map<UUID, Long> LAST_UPDATE = new HashMap<>();
 
-    public static void tryActivate(ServerPlayer player) {
-        if (player.getCooldowns().isOnCooldown(ModItems.SANDEVISTAN.get())) {
-            player.displayClientMessage(
-                    Component.translatable("message.theedge.cooldown").withStyle(ChatFormatting.RED), true);
-            return;
-        }
-        if (!player.getInventory().contains(new ItemStack(ModItems.SANDEVISTAN.get()))) {
+    public static volatile boolean slowing = false;
+    public static volatile int divisor = 8;
+    private static boolean ownsTickRate = false;
+
+    public static boolean isActive(Player player) {
+        return ACTIVE.contains(player.getUUID());
+    }
+
+    public static boolean isOverload(Player player) {
+        return OVERLOAD.contains(player.getUUID());
+    }
+
+    public static double energy(Player player) {
+        return ENERGY.getOrDefault(player.getUUID(), capacity());
+    }
+
+    public static double capacity() {
+        return TheEdgeConfig.CAPACITY_SECONDS.get();
+    }
+
+    public static void toggle(ServerPlayer player) {
+        if (!hasSandevistan(player)) {
             player.displayClientMessage(
                     Component.translatable("message.theedge.no_item").withStyle(ChatFormatting.RED), true);
             return;
         }
-        activate(player);
-    }
-
-    private static void activate(ServerPlayer player) {
-        int duration = TheEdgeConfig.DURATION_TICKS.get();
-        int cooldown = TheEdgeConfig.COOLDOWN_TICKS.get();
-
-        REMAINING_TICKS.put(player.getUUID(), duration);
-        player.getCooldowns().addCooldown(ModItems.SANDEVISTAN.get(), cooldown);
-
-        int selfSpeed = TheEdgeConfig.SELF_SPEED_AMPLIFIER.get();
-        if (selfSpeed >= 0) {
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, duration, selfSpeed, false, false, true));
+        if (ACTIVE.contains(player.getUUID())) {
+            deactivate(player);
+            return;
         }
-
+        if (energy(player) <= 0.01) {
+            player.displayClientMessage(
+                    Component.translatable("message.theedge.empty").withStyle(ChatFormatting.RED), true);
+            return;
+        }
+        ACTIVE.add(player.getUUID());
+        LAST_UPDATE.put(player.getUUID(), System.nanoTime());
         player.level().playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0F, 1.6F);
         player.displayClientMessage(
                 Component.translatable("message.theedge.activated").withStyle(ChatFormatting.GOLD), true);
-
-        PacketDistributor.sendToPlayer(player, new SandevistanSyncPayload(duration, cooldown));
     }
 
-    public static boolean isActive(Player player) {
-        return REMAINING_TICKS.getOrDefault(player.getUUID(), 0) > 0;
+    public static void toggleOverload(ServerPlayer player) {
+        if (!ACTIVE.contains(player.getUUID())) {
+            return;
+        }
+        if (OVERLOAD.contains(player.getUUID())) {
+            OVERLOAD.remove(player.getUUID());
+        } else {
+            OVERLOAD.add(player.getUUID());
+        }
+    }
+
+    private static void deactivate(ServerPlayer player) {
+        ACTIVE.remove(player.getUUID());
+        OVERLOAD.remove(player.getUUID());
+        player.displayClientMessage(
+                Component.translatable("message.theedge.ended").withStyle(ChatFormatting.GRAY), true);
+    }
+
+    private static boolean hasSandevistan(ServerPlayer player) {
+        return player.getInventory().contains(new ItemStack(ModItems.SANDEVISTAN.get()));
     }
 
     public static void onServerTick(MinecraftServer server) {
-        if (REMAINING_TICKS.isEmpty()) {
-            return;
+        long now = System.nanoTime();
+        double capacity = capacity();
+        double recharge = TheEdgeConfig.RECHARGE_PER_SECOND.get();
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            UUID id = player.getUUID();
+            ENERGY.putIfAbsent(id, capacity);
+            LAST_UPDATE.putIfAbsent(id, now);
         }
 
-        Set<UUID> active = new HashSet<>();
-        Iterator<Map.Entry<UUID, Integer>> iterator = REMAINING_TICKS.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Double>> iterator = new HashMap<>(ENERGY).entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<UUID, Integer> entry = iterator.next();
-            int remaining = entry.getValue() - 1;
-            if (remaining <= 0) {
-                iterator.remove();
-                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-                if (player != null) {
-                    player.displayClientMessage(
-                            Component.translatable("message.theedge.ended").withStyle(ChatFormatting.GRAY), true);
+            Map.Entry<UUID, Double> entry = iterator.next();
+            UUID id = entry.getKey();
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            if (player == null) {
+                if (!ACTIVE.contains(id)) {
+                    ENERGY.remove(id);
+                    LAST_UPDATE.remove(id);
                 }
-            } else {
-                entry.setValue(remaining);
-                active.add(entry.getKey());
-            }
-        }
-
-        if (active.isEmpty()) {
-            return;
-        }
-
-        int radius = TheEdgeConfig.SLOW_RADIUS.get();
-        double motionSlowFactor = TheEdgeConfig.MOTION_SLOW_FACTOR.get();
-        int slownessAmplifier = TheEdgeConfig.SLOWNESS_AMPLIFIER.get();
-
-        for (ServerLevel level : server.getAllLevels()) {
-            List<Vec3> activePositions = new ArrayList<>();
-            for (UUID id : active) {
-                ServerPlayer player = server.getPlayerList().getPlayer(id);
-                if (player != null && player.level() == level) {
-                    activePositions.add(player.position());
-                }
-            }
-            if (activePositions.isEmpty()) {
                 continue;
             }
 
-            boolean global = radius <= 0;
-            double radiusSq = (double) radius * radius;
+            long last = LAST_UPDATE.getOrDefault(id, now);
+            double elapsed = Math.max(0.0, (now - last) / 1_000_000_000.0);
+            LAST_UPDATE.put(id, now);
 
-            for (Entity entity : level.getAllEntities()) {
-                if (entity instanceof ServerPlayer serverPlayer && active.contains(serverPlayer.getUUID())) {
-                    continue;
+            double value = entry.getValue();
+            if (ACTIVE.contains(id)) {
+                double drain = OVERLOAD.contains(id) ? TheEdgeConfig.OVERLOAD_DRAIN_MULTIPLIER.get() : 1.0;
+                value -= elapsed * drain;
+                if (value <= 0.0) {
+                    value = 0.0;
+                    deactivate(player);
                 }
-                if (!global) {
-                    boolean nearActivePlayer = false;
-                    for (Vec3 pos : activePositions) {
-                        if (entity.distanceToSqr(pos) <= radiusSq) {
-                            nearActivePlayer = true;
-                            break;
-                        }
-                    }
-                    if (!nearActivePlayer) {
-                        continue;
-                    }
-                }
-                applySlowdown(entity, motionSlowFactor, slownessAmplifier);
+            } else {
+                value = Math.min(capacity, value + elapsed * recharge);
             }
+            ENERGY.put(id, value);
+        }
+
+        boolean anyActive = false;
+        int maxDivisor = 1;
+        Iterator<UUID> activeIt = new HashSet<>(ACTIVE).iterator();
+        while (activeIt.hasNext()) {
+            UUID id = activeIt.next();
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            if (player == null) {
+                ACTIVE.remove(id);
+                OVERLOAD.remove(id);
+                continue;
+            }
+            anyActive = true;
+            int d = OVERLOAD.contains(id) ? TheEdgeConfig.OVERLOAD_DIVISOR.get() : TheEdgeConfig.NORMAL_DIVISOR.get();
+            maxDivisor = Math.max(maxDivisor, d);
+        }
+
+        slowing = anyActive;
+        divisor = Math.max(1, maxDivisor);
+
+        ServerTickRateManager manager = server.tickRateManager();
+        if (slowing) {
+            float target = 20.0F / divisor;
+            if (!ownsTickRate) {
+                ownsTickRate = true;
+                manager.setTickRate(target);
+            } else if (Math.abs(manager.tickrate() - target) > 0.01F) {
+                manager.setTickRate(target);
+            }
+        } else if (ownsTickRate) {
+            ownsTickRate = false;
+            manager.setTickRate(20.0F);
+        }
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            PacketDistributor.sendToPlayer(player, new SandevistanSyncPayload(
+                    ACTIVE.contains(player.getUUID()),
+                    OVERLOAD.contains(player.getUUID()),
+                    energy(player),
+                    capacity));
         }
     }
 
-    private static void applySlowdown(Entity entity, double motionSlowFactor, int slownessAmplifier) {
-        if (entity instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 25, slownessAmplifier, false, false, false));
-            living.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 25, 2, false, false, false));
-        }
-        if (motionSlowFactor < 1.0) {
-            Vec3 motion = entity.getDeltaMovement();
-            entity.setDeltaMovement(motion.x * motionSlowFactor, motion.y * motionSlowFactor, motion.z * motionSlowFactor);
-        }
+    public static void onServerStopped() {
+        ACTIVE.clear();
+        OVERLOAD.clear();
+        ENERGY.clear();
+        LAST_UPDATE.clear();
+        slowing = false;
+        divisor = 8;
+        ownsTickRate = false;
     }
 }

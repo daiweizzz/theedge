@@ -1,6 +1,7 @@
 package com.theedge.core;
 
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class ServerEventHandler {
@@ -10,5 +11,10 @@ public final class ServerEventHandler {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         SandevistanState.onServerTick(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        SandevistanState.onServerStopped();
     }
 }

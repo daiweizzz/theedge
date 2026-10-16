@@ -26,7 +26,11 @@ public final class ModNetwork {
     private static void handleActivate(final ActivateSandevistanPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) {
-                SandevistanState.tryActivate(player);
+                if (payload.overload()) {
+                    SandevistanState.toggleOverload(player);
+                } else {
+                    SandevistanState.toggle(player);
+                }
             }
         });
     }

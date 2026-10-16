@@ -23,7 +23,7 @@ public class SandevistanItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide()) {
-            SandevistanState.tryActivate((ServerPlayer) player);
+            SandevistanState.toggle((ServerPlayer) player);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }

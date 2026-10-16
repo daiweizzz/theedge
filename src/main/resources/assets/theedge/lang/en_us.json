@@ -1,11 +1,14 @@
 {
-  "item.theedge.sandevistan": "Sandevistan",
+  "item.theedge.sandevistan": "Apogee - Sandevistan",
   "itemGroup.theedge": "The Edge",
   "key.categories.theedge": "The Edge",
-  "key.theedge.activate": "Activate Sandevistan",
-  "message.theedge.activated": "Sandevistan activated",
-  "message.theedge.ended": "Sandevistan deactivated",
-  "message.theedge.cooldown": "Sandevistan is recharging",
-  "message.theedge.no_item": "You need a Sandevistan to do that",
-  "tooltip.theedge.sandevistan": "Slows time for everything around you"
+  "key.theedge.activate": "Toggle Apogee Sandevistan",
+  "key.theedge.overload": "Apogee Overload",
+  "message.theedge.activated": "Apogee engaged",
+  "message.theedge.ended": "Apogee disengaged",
+  "message.theedge.empty": "Apogee stamina depleted",
+  "message.theedge.no_item": "You need an Apogee Sandevistan to do that",
+  "hud.theedge.active": "Apogee · %s s remaining",
+  "hud.theedge.recharge": "Apogee · recharging %s",
+  "tooltip.theedge.sandevistan": "Slows the world down to a crawl while you keep moving."
 }
